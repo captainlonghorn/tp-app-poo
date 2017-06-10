@@ -8,6 +8,7 @@ use \Entity\Comment;
 use \FormBuilder\CommentFormBuilder;
 use \FormBuilder\NewsFormBuilder;
 use \OCFram\FormHandler;
+use \OCFram\AppCacheView;
 
 class NewsController extends BackController
 {
@@ -52,8 +53,14 @@ class NewsController extends BackController
   public function executeUpdate(HTTPRequest $request)
   {
     $this->processForm($request);
+    var_dump($request->getData('id'));
 
     $this->page->addVar('title', 'Modification d\'une news');
+
+    // Destruction du cache de la news
+    $cache = new AppCacheView('Frontend', 'News', 'show'.'-'.$request->getData('id'));
+    var_dump($cache->getFilePath());
+    $cache->delete();
   }
 
   public function executeUpdateComment(HTTPRequest $request)

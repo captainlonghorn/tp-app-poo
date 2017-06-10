@@ -17,8 +17,11 @@ abstract class AppCache extends ApplicationComponent
     // SHOW_CACHE_INFO permettra d'afficher une info lorsque le HTML est issu du cache
     const SHOW_CACHE_INFO = true;
     // Emplacement des dossiers de cache
-    const DATAS_CACHE_DIR_PATH = 'tmp/cache/datas';
-    const VIEWS_CACHE_DIR_PATH = 'tmp/cache/views';
+    const DATAS_CACHE_DIR_PATH = __DIR__ . '\..\..\tmp\cache\datas';
+    const VIEWS_CACHE_DIR_PATH = __DIR__ . '\..\..\tmp\cache\views';
+
+    // par défaut le cache durera 1 heure
+    const DEFAULT_CACHE_VALIDITY = 10;
 
     public function __construct(Application $app)
     {
@@ -37,22 +40,70 @@ abstract class AppCache extends ApplicationComponent
 
     abstract function setFilePath();
 
-    abstract function getFilePath();
+    function getFilePath()
+    {
+        return $this->filePath;
+    }
 
-    public function cacheExists(){
+    public function cacheExists()
+    {
+        if ($this::SHOW_CACHE_INFO) {
+            $cacheInfo = 'Info de cache : ';
+        }
+        if (file_exists($this->getFilePath())) {
+            if ($this::SHOW_CACHE_INFO) {
+                $cacheInfo .= ' fichier '.$this->getFilePath().' trouvé <br>';
+            }
+            // dans ce cas on teste directement la validité de ce cache
+            if ($this->isValid()) {
+                if ($this::SHOW_CACHE_INFO) {
+                    $cacheInfo .= ' timestamp ok <br>';
+                    echo '<p>'.$cacheInfo.'</p>';
+                }
+                return true;
+            }
+            if ($this::SHOW_CACHE_INFO) {
+                $cacheInfo .= ' timestamp ko <br>';
+                echo '<p>' . $cacheInfo . '</p>';
+            }
+            return false;
+        }
+        if ($this::SHOW_CACHE_INFO) {
+            $cacheInfo .= ' fichier '.$this->getFilePath().' non trouvé <br>';
+            echo '<p>'.$cacheInfo.'</p>';
+        }
+
+        return false;
+    }
+
+    public function isValid()
+    {
+        // lecture du fichier en cache
+        $file = fopen($this->getFilePath(), 'r');
+        // extraction du timestamp pour test de la validité > c'est la ligne 1
+        $file_timestamp = fgets($file);
+        // test de la validité du timestamp : différence entre timestamp de maintenant et celui du
+        // fichier doit être < au nombre de seconds de la directive de durée du cache
+        $maintenant = time();
+        if (($maintenant-$file_timestamp) > $this::DEFAULT_CACHE_VALIDITY){
+            return false;
+        }
+        return true;
+    }
+
+    public function getTimeStamp()
+    {
 
     }
 
-    public function getCache(){
+    abstract public function getCache();
 
-    }
+    // l'écriture sera différente pour les vues et les listes
+    abstract public function cacheWrite($buffer);
 
-    public function cacheWrite() {
-
-    }
-
-    public function cacheDelete() {
-
+    public function delete()
+    {
+        unlink($this->getFilePath());
     }
 
 

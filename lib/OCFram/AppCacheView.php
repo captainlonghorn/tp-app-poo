@@ -13,10 +13,11 @@ class AppCacheView extends AppCache
 {
 
 
-    public function __construct(Application $app, string $module, string $viewname)
+    public function __construct($appname, string $module, string $viewname)
     {
-        parent::__construct($app);
-        $this->setFileName($app->name(), $module, $viewname);
+        //parent::__construct($app);
+
+        $this->setFileName($appname, $module, $viewname);
         $this->setFilePath();
     }
 
@@ -39,12 +40,42 @@ class AppCacheView extends AppCache
     {
         $path = parent::VIEWS_CACHE_DIR_PATH;
         $name = $this->getFileName();
-        $this->filePath = $path . '/' . $name . '.html';
+        $this->filePath = $path . '\\' . $name . '.html';
     }
 
-    function getFilePath()
+    public function cacheWrite($buffer)
     {
-        return $this->filePath;
+        // on prépare le fichier
+        // si le fichier existe on le détruit
+        if (file_exists($this->getFilePath())) {
+            unlink($this->getFilePath());
+        }
+        // et on prépare le nouveau fichier
+        $file = fopen($this->getFilePath(), 'x+');
+        // on écrit le timestamp
+        $timestamp = time();
+        fputs($file, $timestamp. "\r\n");
+        // on écrit le html
+        fputs($file, $buffer);
+        fclose($file);
+    }
+
+    public function getCache()
+    {
+        // On va récupérer le contenu du html et le passer à la page
+        $file = fopen($this->getFilePath(), 'r');
+        $buffer = '';
+        // sauf la ligne 1
+        $premiere_ligne = true;
+        while ($line = fgets($file)) {
+            if ($premiere_ligne){
+                $premiere_ligne = false;
+                continue;
+            }
+            $buffer .= $line;
+        }
+        return $buffer;
+
     }
 
 

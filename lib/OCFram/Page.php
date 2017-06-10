@@ -45,4 +45,15 @@ class Page extends ApplicationComponent
 
     $this->contentFile = $contentFile;
   }
+
+  /**
+   * @return array
+   */
+  public function getVars()
+  {
+    return $this->vars;
+  }
+
+  
+  
 }
