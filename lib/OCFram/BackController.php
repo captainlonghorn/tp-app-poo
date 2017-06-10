@@ -69,4 +69,25 @@ abstract class BackController extends ApplicationComponent
 
     $this->page->setContentFile(__DIR__.'/../../App/'.$this->app->name().'/Modules/'.$this->module.'/Views/'.$this->view.'.php');
   }
+
+  /*
+   * Ajouts nécessaires à la construction du cache
+   */
+  /**
+   * @return string
+   */
+  public function getModule()
+  {
+    return $this->module;
+  }
+
+  /**
+   * @return string
+   */
+  public function getView()
+  {
+    return $this->view;
+  }
+
+
 }
