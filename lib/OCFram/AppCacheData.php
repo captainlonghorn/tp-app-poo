@@ -2,28 +2,28 @@
 /**
  * Created by PhpStorm.
  * User: David
- * Date: 10/06/2017
- * Time: 09:46
+ * Date: 11/06/2017
+ * Time: 14:19
  */
 
 namespace OCFram;
 
 
-class AppCacheView extends AppCache
+class AppCacheData extends AppCache
 {
 
-    public function __construct($appname, string $module, string $viewname)
+    public function __construct($app, $module, $itemName)
     {
         //parent::__construct($app);
 
-        $this->setFileName($appname, $module, $viewname);
+        $this->setFileName($app, $module, $itemName);
         $this->setFilePath();
     }
 
-    function setFileName($name, $module, $viewname)
+    function setFileName($app, $module, $itemName)
     {
-        if ($name and $module and $viewname) {
-            $this->fileName = ucfirst($name) . '_' . ucfirst($module) . '_' . strtolower($viewname);
+        if ($itemName) {
+            $this->fileName = ucfirst($itemName);
         } else {
             throw new \Exception ('Impossible de construire le nom du cache');
         }
@@ -31,10 +31,17 @@ class AppCacheView extends AppCache
 
     function setFilePath()
     {
-        $path = parent::VIEWS_CACHE_DIR_PATH;
+        $path = parent::DATAS_CACHE_DIR_PATH;
         $name = $this->getFileName();
         $this->filePath = $path . '\\' . $name . '.html';
     }
+    /*
+    public function getCache()
+    {
+        // TODO: Implement getCache() method.
+    }
+    */
+    
     /*
     public function cacheWrite($buffer)
     {
@@ -54,27 +61,6 @@ class AppCacheView extends AppCache
         if ($this::SHOW_CACHE_INFO) {
             echo '<p>Ecriture du nouveau fichier '.$this->getFilePath().' avec timestamp : '.$timestamp .'</p>';
         }
-    }
-    */
-    /*
-    public function getCache()
-    {
-        // On va récupérer le contenu du html et le passer à la page
-        $file = fopen($this->getFilePath(), 'r');
-        $buffer = '';
-        // sauf la ligne 1
-        $premiere_ligne = true;
-        while ($line = fgets($file)) {
-            if ($premiere_ligne){
-                $premiere_ligne = false;
-                continue;
-            }
-            $buffer .= $line;
-        }
-        return $buffer;
-
-    }
-    */
-
+    }*/
 
 }

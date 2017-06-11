@@ -33,7 +33,9 @@ abstract class AppCache extends ApplicationComponent
      */
     abstract function setFileName($appName, $moduleName, $itemName);
 
-    abstract function getFileName();
+    function getFileName() {
+        return $this->fileName;
+    }
 
     abstract function setFilePath();
 
@@ -88,10 +90,47 @@ abstract class AppCache extends ApplicationComponent
         return true;
     }
 
-    abstract public function getCache();
+    //abstract public function getCache();
 
     // l'écriture sera différente pour les vues et les listes
-    abstract public function cacheWrite($buffer);
+    //abstract public function cacheWrite($buffer);
+    public function cacheWrite($buffer)
+    {
+        // on prépare le fichier
+        // si le fichier existe on le détruit
+        if (file_exists($this->getFilePath())) {
+            $this->delete();
+        }
+        // et on prépare le nouveau fichier
+        $file = fopen($this->getFilePath(), 'x+');
+        // on écrit le timestamp
+        $timestamp = time();
+        fputs($file, $timestamp. "\r\n");
+        // on écrit le html
+        fputs($file, $buffer);
+        fclose($file);
+        if ($this::SHOW_CACHE_INFO) {
+            echo '<p>Ecriture du nouveau fichier '.$this->getFilePath().' avec timestamp : '.$timestamp .'</p>';
+        }
+    }
+
+    public function getCache()
+    {
+        // On va récupérer le contenu du html et le passer à la page
+        $file = fopen($this->getFilePath(), 'r');
+        $buffer = '';
+        // sauf la ligne 1
+        $premiere_ligne = true;
+        while ($line = fgets($file)) {
+            if ($premiere_ligne){
+                $premiere_ligne = false;
+                continue;
+            }
+            $buffer .= $line;
+        }
+        return $buffer;
+
+    }
 
     public function delete()
     {

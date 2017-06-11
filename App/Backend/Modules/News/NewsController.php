@@ -84,7 +84,6 @@ class NewsController extends BackController
     public function executeUpdate(HTTPRequest $request)
     {
         $this->processForm($request);
-        var_dump($request->getData('id'));
 
         $this->page->addVar('title', 'Modification d\'une news');
 

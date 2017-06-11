@@ -1,6 +1,7 @@
 <?php
 namespace App\Frontend\Modules\News;
 
+use OCFram\AppCacheData;
 use \OCFram\BackController;
 use \OCFram\HTTPRequest;
 use \Entity\Comment;
@@ -19,6 +20,7 @@ class NewsController extends BackController
         $this->caches = array(
             'index' => 120,
             'show' => 60,
+            'commentsList' => 60
         );
     }
 
@@ -58,8 +60,38 @@ class NewsController extends BackController
 
         $this->page->addVar('title', $news->titre());
         $this->page->addVar('news', $news);
-        $this->page->addVar('comments',
-            $this->managers->getManagerOf('Comments')->getListOf($news->id()));
+
+        // On utilise un marqueur pour statuer sur la reconstruction de liste
+        $buildList = true;
+
+        /*
+         * Gestion du cache
+         */
+        // On souhaite mettre cette liste en cache
+        $dataCacheName = 'commentsList';
+        $dataCache = new AppCacheData($this->app, null, $dataCacheName);
+        $dataCacheDuration = $this->getUseCache($dataCacheName);
+
+        // Existe t'il une déja liste sérialisée ?
+        if ($dataCache->cacheExists($dataCacheDuration)) {
+            // récupération de la page en cache (elle existe, a une durée valide et est débarrassée de la ligne du timestamp)
+            $data = $dataCache->getCache();
+            $comments = unserialize($data);
+            // Modification du marqueur pour indiquer qu'on ne reconstruira pas la vue
+            $buildList = false;
+        }
+
+        if ($buildList) {
+            // si on est ici c'est que le cache était invalide ou inexistant
+            // construction de la liste
+            $comments = $this->managers->getManagerOf('Comments')->getListOf($news->id());
+            // serialization
+            $serial = serialize($comments);
+            // ecriture du cache
+            $dataCache->cacheWrite($serial);
+        }
+        // ajout de la liste de comments à la page
+        $this->page->addVar('comments', $comments);
     }
 
     public function executeInsertComment(HTTPRequest $request)
@@ -88,7 +120,7 @@ class NewsController extends BackController
             $this->app->user()->setFlash('Le commentaire a bien été ajouté, merci !');
 
             // Destruction du cache de la news associée
-            $cache = new AppCacheView('Frontend', 'News', 'show'.'-'.$request->getData('news'));
+            $cache = new AppCacheView('Frontend', 'News', 'show' . '-' . $request->getData('news'));
             $cache->delete();
 
             $this->app->httpResponse()->redirect('news-' . $request->getData('news') . '.html');
