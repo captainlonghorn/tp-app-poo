@@ -20,9 +20,6 @@ abstract class AppCache extends ApplicationComponent
     const DATAS_CACHE_DIR_PATH = __DIR__ . '\..\..\tmp\cache\datas';
     const VIEWS_CACHE_DIR_PATH = __DIR__ . '\..\..\tmp\cache\views';
 
-    // par défaut le cache durera 1 heure
-    const DEFAULT_CACHE_VALIDITY = 10;
-
     public function __construct(Application $app)
     {
         parent::__construct($app);
@@ -45,7 +42,7 @@ abstract class AppCache extends ApplicationComponent
         return $this->filePath;
     }
 
-    public function cacheExists()
+    public function cacheExists($duration)
     {
         if ($this::SHOW_CACHE_INFO) {
             $cacheInfo = 'Info de cache : ';
@@ -55,15 +52,15 @@ abstract class AppCache extends ApplicationComponent
                 $cacheInfo .= ' fichier '.$this->getFilePath().' trouvé <br>';
             }
             // dans ce cas on teste directement la validité de ce cache
-            if ($this->isValid()) {
+            if ($this->isValid($duration)) {
                 if ($this::SHOW_CACHE_INFO) {
-                    $cacheInfo .= ' timestamp ok <br>';
+                    $cacheInfo .= ' timestamp de ' . $duration . ' sec. :  OK <br>';
                     echo '<p>'.$cacheInfo.'</p>';
                 }
                 return true;
             }
             if ($this::SHOW_CACHE_INFO) {
-                $cacheInfo .= ' timestamp ko <br>';
+                $cacheInfo .= ' timestamp de ' . $duration . ' sec. :  KO <br>';
                 echo '<p>' . $cacheInfo . '</p>';
             }
             return false;
@@ -76,24 +73,19 @@ abstract class AppCache extends ApplicationComponent
         return false;
     }
 
-    public function isValid()
+    public function isValid(int $duration)
     {
         // lecture du fichier en cache
         $file = fopen($this->getFilePath(), 'r');
         // extraction du timestamp pour test de la validité > c'est la ligne 1
         $file_timestamp = fgets($file);
         // test de la validité du timestamp : différence entre timestamp de maintenant et celui du
-        // fichier doit être < au nombre de seconds de la directive de durée du cache
+        // fichier doit être < au nombre de seconds indiqué par le controller
         $maintenant = time();
-        if (($maintenant-$file_timestamp) > $this::DEFAULT_CACHE_VALIDITY){
+        if (($maintenant-$file_timestamp) > $duration){
             return false;
         }
         return true;
-    }
-
-    public function getTimeStamp()
-    {
-
     }
 
     abstract public function getCache();
@@ -103,7 +95,13 @@ abstract class AppCache extends ApplicationComponent
 
     public function delete()
     {
-        unlink($this->getFilePath());
+        if ($this::SHOW_CACHE_INFO) {
+            echo '<p>Delete du fichier '.$this->getFilePath().'</p>';
+        }
+        if (file_exists($this->getFilePath())) {
+            unlink($this->getFilePath());
+        }
+        return false;
     }
 
 

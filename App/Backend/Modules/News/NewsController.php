@@ -12,6 +12,19 @@ use \OCFram\AppCacheView;
 
 class NewsController extends BackController
 {
+
+  /*
+  * La fonction demandée pour stocker les vues à cacher et leurs valeurs
+  * Le tableau est de la forme nom-de-la-vue => duree-en-secondes
+  */
+  public function createCache()
+  {
+    $this->caches = array(
+        'index' => 120,
+        'update' => 60,
+    );
+  }
+
   public function executeDelete(HTTPRequest $request)
   {
     $newsId = $request->getData('id');
@@ -59,7 +72,9 @@ class NewsController extends BackController
 
     // Destruction du cache de la news
     $cache = new AppCacheView('Frontend', 'News', 'show'.'-'.$request->getData('id'));
-    var_dump($cache->getFilePath());
+    $cache->delete();
+    // Destruction de l'index
+    $cache = new AppCacheView('Frontend', 'News', 'index');
     $cache->delete();
   }
 
@@ -136,6 +151,13 @@ class NewsController extends BackController
     {
       $this->app->user()->setFlash($news->isNew() ? 'La news a bien été ajoutée !' : 'La news a bien été modifiée !');
       
+      // Destruction du cache de la news
+      $cache = new AppCacheView('Frontend', 'News', 'show'.'-'.$request->getData('id'));
+      $cache->delete();
+      // Destruction de l'index
+      $cache = new AppCacheView('Frontend', 'News', 'index');
+      $cache->delete();
+
       $this->app->httpResponse()->redirect('/admin/');
     }
 

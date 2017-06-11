@@ -12,7 +12,6 @@ namespace OCFram;
 class AppCacheView extends AppCache
 {
 
-
     public function __construct($appname, string $module, string $viewname)
     {
         //parent::__construct($app);
@@ -48,7 +47,7 @@ class AppCacheView extends AppCache
         // on prépare le fichier
         // si le fichier existe on le détruit
         if (file_exists($this->getFilePath())) {
-            unlink($this->getFilePath());
+            $this->delete();
         }
         // et on prépare le nouveau fichier
         $file = fopen($this->getFilePath(), 'x+');
@@ -58,6 +57,9 @@ class AppCacheView extends AppCache
         // on écrit le html
         fputs($file, $buffer);
         fclose($file);
+        if ($this::SHOW_CACHE_INFO) {
+            echo '<p>Ecriture du nouveau fichier '.$this->getFilePath().' avec timestamp : '.$timestamp .'</p>';
+        }
     }
 
     public function getCache()

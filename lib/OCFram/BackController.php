@@ -8,6 +8,8 @@ abstract class BackController extends ApplicationComponent
   protected $page = null;
   protected $view = '';
   protected $managers = null;
+  // ajout du tableau de gestion des caches
+  protected $caches = [];
 
   public function __construct(Application $app, $module, $action)
   {
@@ -19,6 +21,25 @@ abstract class BackController extends ApplicationComponent
     $this->setModule($module);
     $this->setAction($action);
     $this->setView($action);
+
+    // ajout du tableau des durées de cache
+    $this->createCache();
+  }
+
+  /*
+   * Fonction à ajouter dans tous les controllers afin de répondre aux problématiques de cache
+  */
+  abstract function createCache();
+  /*
+   * Fonction qui vérifiera si on doit chercher en cache pour telle action dans ce controller
+   * Rappel : Nom de la vue = nom de l'action Voir ci dessus $this->setView($action);
+   */
+  public function getUseCache(string $actionName)
+  {
+    if (isset($this->caches[(string) $actionName])){
+      return $this->caches[(string) $actionName];
+    }
+    return false;
   }
 
   public function execute()
