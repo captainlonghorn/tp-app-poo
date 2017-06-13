@@ -1,17 +1,17 @@
 Bonjour,
 
 Afin de faire fonctionner le site tp-app-poo correctement sur ma machine j'ai ajouté ces lignes dans httpd-vhosts.conf :
-<VirtualHost tp-app-poo>
+`<VirtualHost tp-app-poo>
     ServerName tp-app-poo
     DocumentRoot c:/wamp/www/tp-app-poo/Web
     <Directory  "c:/wamp/www/tp-app-poo/Web">
         Options +Indexes +Includes +FollowSymLinks +MultiViews
         AllowOverride All
     </Directory>
-</VirtualHost>
+</VirtualHost>`
 
 Et ceci dans windows\system32\drivers\etc\host :
-127.0.0.1 tp-app-poo
+`127.0.0.1 tp-app-poo`
 
 Comme précisé dans le cours
 
